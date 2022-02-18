@@ -28,6 +28,10 @@ db-init: ## Initialize the database
 worker: ## Start the worker
 	go run ./worker/
 
+.PHONY: bworker
+bworker: ## Start the backfill worker
+	go run ./backfill_worker/
+
 .PHONY: fetch
 fetch: ## Fetch latest after worker has started
 	go run ./starter/

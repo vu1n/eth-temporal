@@ -38,3 +38,14 @@ To start the worker program. We can scale horizontally by running more programs.
 The included go program will spawn worker processes to fetch new blocks, starting from the `LATEST` block and incrementing from there.
 
 `$ make fetch`
+
+### Backfilling
+To backfill specific blocks, run the included go program to populate the task queue. Currently set to use the same task queue as the fetch task.
+
+Start the backfill worker:
+
+`$ make backfill-worker`
+
+Add the backfill tasks:
+
+`$ go run ./backfiller/ -start 200 -end 210 -size 3`
