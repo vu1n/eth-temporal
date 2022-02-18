@@ -34,6 +34,7 @@ services:
       - temporal-network
     ports:
       - 5433:5433
+    command: -p 5433
   temporal:
     container_name: temporal
     depends_on:

@@ -1,7 +1,7 @@
 # A Self-Documenting Makefile: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 
 .PHONY: up
-up: ## Spin up Temporal cluster
+up:  ## Spin up Temporal cluster
 	docker compose up -d 
 
 .PHONY: down
@@ -20,9 +20,17 @@ ps: ## Check the status of Temporal services
 shell: ## Start a shell with the Temporal CLI
 	docker compose exec temporal-admin-tools bash
 
+.PHONY: db-init
+db-init: ## Initialize the database
+	go run ./db-init/
+
 .PHONY: worker
 worker: ## Start the worker
 	go run ./worker/
+
+.PHONY: fetch
+fetch: ## Fetch latest after worker has started
+	go run ./starter/
 
 .PHONY: test
 test: ## Run tests
