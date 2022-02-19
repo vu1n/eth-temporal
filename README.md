@@ -11,7 +11,9 @@ stop       Stop the Temporal cluster
 ps         Check the status of Temporal services
 shell      Start a shell with the Temporal CLI
 db-init    Initialize the database
+api        Start up API server
 worker     Start the worker
+bworker    Start the backfill worker
 fetch      Fetch latest after worker has started
 test       Run tests
 ```
@@ -49,3 +51,14 @@ Start the backfill worker:
 Add the backfill tasks:
 
 `$ go run ./backfiller/ -start 200 -end 210 -size 3`
+
+### API
+There is a basic API to query block numbers. If the block number does not exist in the postgres database, it will start a workflow to fetch the block from the web3 provider and then return the results.
+
+Start the api server:
+
+`$ make api`
+
+Make an HTTP GET request to:
+
+`http://localhost:8081/blockNumber/{blockNumber}[0-9]+`

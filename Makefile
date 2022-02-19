@@ -24,6 +24,10 @@ shell: ## Start a shell with the Temporal CLI
 db-init: ## Initialize the database
 	go run ./db-init/
 
+.PHONY: api
+api: ## Start up API server
+	go run ./api/
+
 .PHONY: worker
 worker: ## Start the worker
 	go run ./worker/
