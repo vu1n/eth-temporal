@@ -57,7 +57,24 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 		panic(err)
 	}
 
-	transactions, err := json.Marshal(result.Transactions)
+	var transactions []app.Transaction
+	for _, t := range result.Transactions {
+		transaction := app.Transaction{
+			Hash:        t.Hash.String(),
+			From:        t.From.String(),
+			To:          t.To.String(),
+			GasPrice:    t.GasPrice,
+			Gas:         t.Gas,
+			Value:       t.Value,
+			Nonce:       t.Nonce,
+			BlockHash:   t.BlockHash.String(),
+			BlockNumber: t.BlockNumber,
+			TxnIndex:    t.TxnIndex,
+		}
+		transactions = append(transactions, transaction)
+	}
+
+	transactionsJson, err := json.Marshal(transactions)
 	if err != nil {
 		panic(err)
 	}
@@ -76,10 +93,35 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 		GasLimit:         result.GasLimit,
 		GasUsed:          result.GasUsed,
 		Timestamp:        result.Timestamp,
-		Transactions:     string(transactions),
+		Transactions:     string(transactionsJson),
 	}
 
 	return block, nil
+}
+
+func GetLastInsertedBlockNumber(ctx context.Context) (uint64, error) {
+	logger := activity.GetLogger(ctx)
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+	// Connect to pg db
+	db, err := sql.Open("postgres", psqlconn)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	logger.Info(fmt.Sprintf("Connected to %s", host))
+	// clean up db connection
+	defer db.Close()
+
+	rows, err := db.Query("SELECT MAX(number) FROM ethereum.blocks;")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	var blockNumber uint64
+	rows.Next()
+	rows.Scan(&blockNumber)
+	return blockNumber, err
 }
 
 func UpsertToPostgres(ctx context.Context, block app.Block) error {
@@ -156,7 +198,12 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 		)
 		ON CONFLICT(number)
 		DO
-		UPDATE SET transactions = EXCLUDED.transactions
+		UPDATE SET transactions = EXCLUDED.transactions,
+		           gas_limit    = EXCLUDED.gas_limit,
+				   gas_used     = EXCLUDED.gas_used,
+				   timestamp    = EXCLUDED.timestamp,
+				   difficulty   = EXCLUDED.difficulty,
+				   sha3_uncles  = EXCLUDED.sha3_uncles
 		`, block.Number, block.Hash, block.ParentHash, block.Sha3Uncles, block.TransactionsRoot, block.StateRoot, block.ReceiptsRoot,
 		block.Miner, block.Difficulty, block.ExtraData, block.GasLimit, block.GasUsed, block.Timestamp, block.Transactions)
 	logger.Info("Executing:")

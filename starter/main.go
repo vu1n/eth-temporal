@@ -48,7 +48,7 @@ func startWorkflow(c client.Client, state *fetchState) {
 
 func main() {
 	// catchup := flag.Bool("catchup", false, "Catch up from latest")
-	// size := flag.Int("size", 10, "The queue size")
+	size := flag.Int("size", 3, "The queue size")
 	flag.Parse()
 
 	// Create the client object just once per process
@@ -76,11 +76,9 @@ func main() {
 	fmt.Println("Fetching latest blocks")
 
 	currentState := &fetchState{blockNum}
-	go startWorkflow(c, currentState)
-	go startWorkflow(c, currentState)
-	go startWorkflow(c, currentState)
-	go startWorkflow(c, currentState)
-	go startWorkflow(c, currentState)
+	for i := 0; i < *size; i++ {
+		go startWorkflow(c, currentState)
+	}
 	for {
 		time.Sleep(time.Second * 15)
 		fmt.Println("Working . . . ")
