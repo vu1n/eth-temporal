@@ -155,7 +155,7 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 			gas_limit         BIGINT         DEFAULT NULL,
 			gas_used          BIGINT         DEFAULT NULL,
 			timestamp         BIGINT         NOT NULL,
-			transactions      TEXT,
+			transactions      JSONB,
 			PRIMARY KEY (number)
 		)`
 
