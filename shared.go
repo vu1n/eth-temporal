@@ -15,6 +15,22 @@ var QueryTypes = struct {
 	BLOCK_COMPLETE: "block_complete",
 }
 
+var DB = struct {
+	rpcHost  string
+	host     string
+	port     int
+	user     string
+	password string
+	dbname   string
+}{
+	rpcHost:  "https://eth-rpc.gateway.pokt.network",
+	host:     "localhost",
+	port:     5433,
+	user:     "temporal",
+	password: "temporal",
+	dbname:   "postgres",
+}
+
 type Transaction struct {
 	Hash        string
 	From        string
@@ -29,18 +45,18 @@ type Transaction struct {
 }
 
 type Block struct {
-	Number           uint64
-	Hash             string
-	ParentHash       string
-	Sha3Uncles       string
-	TransactionsRoot string
-	StateRoot        string
-	ReceiptsRoot     string
-	Miner            string
-	Difficulty       *big.Int
-	ExtraData        string
-	GasLimit         uint64
-	GasUsed          uint64
-	Timestamp        uint64
-	Transactions     string
+	Number           uint64   `json:"number"`
+	Hash             string   `json:"hash"`
+	ParentHash       string   `json:"parent_hash"`
+	Sha3Uncles       string   `json:"sha3_uncles"`
+	TransactionsRoot string   `json:"transactions_root"`
+	StateRoot        string   `json:"state_root"`
+	ReceiptsRoot     string   `json:"receipts_root"`
+	Miner            string   `json:"miner"`
+	Difficulty       *big.Int `json:"difficulty"`
+	ExtraData        string   `json:"extra_data"`
+	GasLimit         uint64   `json:"gas_limit"`
+	GasUsed          uint64   `json:"gas_used"`
+	Timestamp        uint64   `json:"timestamp"`
+	Transactions     string   `json:"transactions"`
 }
