@@ -42,6 +42,49 @@ func GetLatestBlockNum(ctx context.Context) (uint64, error) {
 	return number, err
 }
 
+func ConvertBlock(ctx context.Context, block web3.Block) (app.Block, error) {
+	var transactions []app.Transaction
+	for _, t := range block.Transactions {
+		transaction := app.Transaction{
+			Hash:        t.Hash.String(),
+			From:        t.From.String(),
+			To:          t.To.String(),
+			GasPrice:    t.GasPrice,
+			Gas:         t.Gas,
+			Value:       t.Value,
+			Nonce:       t.Nonce,
+			BlockHash:   t.BlockHash.String(),
+			BlockNumber: t.BlockNumber,
+			TxnIndex:    t.TxnIndex,
+		}
+		transactions = append(transactions, transaction)
+	}
+
+	transactionsJson, err := json.Marshal(transactions)
+	if err != nil {
+		panic(err)
+	}
+
+	newBlock := app.Block{
+		Number:           block.Number,
+		Hash:             block.Hash.String(),
+		ParentHash:       block.ParentHash.String(),
+		Sha3Uncles:       block.Sha3Uncles.String(),
+		TransactionsRoot: block.TransactionsRoot.String(),
+		StateRoot:        block.StateRoot.String(),
+		ReceiptsRoot:     block.ReceiptsRoot.String(),
+		Miner:            block.Miner.String(),
+		Difficulty:       block.Difficulty,
+		ExtraData:        string(block.ExtraData),
+		GasLimit:         block.GasLimit,
+		GasUsed:          block.GasUsed,
+		Timestamp:        block.Timestamp,
+		Transactions:     string(transactionsJson),
+	}
+
+	return newBlock, nil
+}
+
 func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 	logger := activity.GetLogger(ctx)
 
