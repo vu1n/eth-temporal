@@ -47,7 +47,6 @@ func startWorkflow(c client.Client, state *fetchState) {
 }
 
 func main() {
-	// catchup := flag.Bool("catchup", false, "Catch up from latest")
 	size := flag.Int("size", 3, "The queue size")
 	flag.Parse()
 

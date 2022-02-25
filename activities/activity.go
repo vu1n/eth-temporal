@@ -42,7 +42,7 @@ func GetLatestBlockNum(ctx context.Context) (uint64, error) {
 	return number, err
 }
 
-func ConvertBlock(ctx context.Context, block web3.Block) (app.Block, error) {
+func ConvertBlock(ctx context.Context, block *web3.Block) (app.Block, error) {
 	var transactions []app.Transaction
 	for _, t := range block.Transactions {
 		transaction := app.Transaction{
@@ -85,7 +85,7 @@ func ConvertBlock(ctx context.Context, block web3.Block) (app.Block, error) {
 	return newBlock, nil
 }
 
-func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
+func GetBlockByNumber(ctx context.Context, number uint64) (*web3.Block, error) {
 	logger := activity.GetLogger(ctx)
 
 	client, err := jsonrpc.NewClient(rpcHost)
@@ -100,46 +100,7 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 		panic(err)
 	}
 
-	var transactions []app.Transaction
-	for _, t := range result.Transactions {
-		transaction := app.Transaction{
-			Hash:        t.Hash.String(),
-			From:        t.From.String(),
-			To:          t.To.String(),
-			GasPrice:    t.GasPrice,
-			Gas:         t.Gas,
-			Value:       t.Value,
-			Nonce:       t.Nonce,
-			BlockHash:   t.BlockHash.String(),
-			BlockNumber: t.BlockNumber,
-			TxnIndex:    t.TxnIndex,
-		}
-		transactions = append(transactions, transaction)
-	}
-
-	transactionsJson, err := json.Marshal(transactions)
-	if err != nil {
-		panic(err)
-	}
-
-	block := app.Block{
-		Number:           result.Number,
-		Hash:             result.Hash.String(),
-		ParentHash:       result.ParentHash.String(),
-		Sha3Uncles:       result.Sha3Uncles.String(),
-		TransactionsRoot: result.TransactionsRoot.String(),
-		StateRoot:        result.StateRoot.String(),
-		ReceiptsRoot:     result.ReceiptsRoot.String(),
-		Miner:            result.Miner.String(),
-		Difficulty:       result.Difficulty,
-		ExtraData:        string(result.ExtraData),
-		GasLimit:         result.GasLimit,
-		GasUsed:          result.GasUsed,
-		Timestamp:        result.Timestamp,
-		Transactions:     string(transactionsJson),
-	}
-
-	return block, nil
+	return result, nil
 }
 
 func GetLastInsertedBlockNumber(ctx context.Context) (uint64, error) {

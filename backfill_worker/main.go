@@ -22,6 +22,7 @@ func main() {
 
 	w := worker.New(c, app.BackfillTaskQueue, worker.Options{})
 
+	w.RegisterActivity(activities.ConvertBlock)
 	w.RegisterActivity(activities.GetBlockByNumber)
 	w.RegisterActivity(activities.UpsertToPostgres)
 

@@ -75,7 +75,7 @@ func (h *handlers) handleGetBlockByNumber(w http.ResponseWriter, r *http.Request
 	rows.Next()
 	err = rows.Scan(&block)
 	if err != nil {
-		// http.Error(w, err.Error(), http.StatusNotFound)
+		// On error we will queue a task to fetch the block and return the reuslt
 		var block app.Block
 		var blockNum uint64
 		blockNum, _ = strconv.ParseUint(blockNumber, 10, 64)
@@ -112,7 +112,6 @@ func (h *handlers) handleGetBlockByNumber(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Println(block)
 	w.Write([]byte(block))
-	// json.NewEncoder(w).Encode(block)
 }
 
 func Router(c client.Client) *mux.Router {

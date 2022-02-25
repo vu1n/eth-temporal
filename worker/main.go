@@ -22,12 +22,12 @@ func main() {
 
 	w := worker.New(c, app.NewBlockTaskQueue, worker.Options{})
 
+	w.RegisterActivity(activities.ConvertBlock)
 	w.RegisterActivity(activities.GetBlockByNumber)
 	w.RegisterActivity(activities.GetLatestBlockNum)
 	w.RegisterActivity(activities.UpsertToPostgres)
 
 	w.RegisterWorkflow(workflows.GetLatestBlockNumWorkflow)
-	w.RegisterWorkflow(workflows.GetLatestBlockWorkflow)
 	w.RegisterWorkflow(workflows.GetBlockWorkflow)
 
 	// Start listening to the Task Queue
