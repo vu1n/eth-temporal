@@ -47,7 +47,7 @@ func startWorkflow(c client.Client, state *fetchState) {
 }
 
 func main() {
-	size := flag.Int("size", 3, "The queue size")
+	size := flag.Int("size", 1, "The queue size")
 	flag.Parse()
 
 	// Create the client object just once per process
