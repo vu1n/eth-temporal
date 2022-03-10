@@ -2,6 +2,10 @@
 
 .PHONY: up
 up:  ## Spin up Temporal cluster
+	docker compose up -d
+
+.PHONY: up-b
+up-b:  ## Spin up and force build Temporal cluster
 	docker compose up -d  --build --force-recreate
 
 .PHONY: down

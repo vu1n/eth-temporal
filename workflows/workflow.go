@@ -73,6 +73,7 @@ func GetBlockWorkflow(ctx workflow.Context, blockNumber uint64) (app.Block, erro
 		if err != nil {
 			panic(err)
 		}
+
 		// Persist to Postgres
 		err = workflow.ExecuteActivity(ctx1, activities.UpsertToPostgres, block).Get(ctx1, &result)
 		if err != nil {

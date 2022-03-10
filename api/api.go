@@ -37,7 +37,7 @@ func (h *handlers) handleGetBlockByNumber(w http.ResponseWriter, r *http.Request
 	fmt.Printf("Fetching %s\n", blockNumber)
 
 	selectSql := fmt.Sprintf(
-		`SELECT jsonb_build_object(
+		`SELECT json_build_object(
 			'number', number,
 			'hash', hash,
 			'parent_hash', parent_hash,

@@ -1,6 +1,7 @@
 package activities
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -127,7 +128,7 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 		ReceiptsRoot:     result.ReceiptsRoot.String(),
 		Miner:            result.Miner.String(),
 		Difficulty:       result.Difficulty,
-		ExtraData:        string(result.ExtraData),
+		ExtraData:        string(bytes.Split(result.ExtraData[:], []byte{0})[0]),
 		GasLimit:         result.GasLimit,
 		GasUsed:          result.GasUsed,
 		Timestamp:        result.Timestamp,
@@ -193,7 +194,7 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 			gas_limit         BIGINT         DEFAULT NULL,
 			gas_used          BIGINT         DEFAULT NULL,
 			timestamp         BIGINT         NOT NULL,
-			transactions      JSONB,
+			transactions      JSON,
 			PRIMARY KEY (number)
 		)`
 
