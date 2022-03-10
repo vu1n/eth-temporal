@@ -66,8 +66,8 @@ func GetBlockWorkflow(ctx workflow.Context, blockNumber uint64) (app.Block, erro
 	var block app.Block
 	var result string
 	var err error
-	// Looping to catch updates. Arbitrarily choosing 5 loops.
-	for i := 0; i < 5; i++ {
+	// Looping to catch updates. Arbitrarily choosing 2 loops.
+	for i := 0; i < 2; i++ {
 		// Fetch block
 		err = workflow.ExecuteActivity(ctx1, activities.GetBlockByNumber, blockNumber).Get(ctx1, &block)
 		if err != nil {
