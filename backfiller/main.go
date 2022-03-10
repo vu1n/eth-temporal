@@ -35,7 +35,7 @@ func startWorkflow(c client.Client, state *fetchState, end uint64) {
 			TaskQueue: app.BackfillTaskQueue,
 		}
 
-		wf, err := c.ExecuteWorkflow(context.Background(), wfOptions, workflows.GetBlockWorkflow, blockNum)
+		wf, err := c.ExecuteWorkflow(context.Background(), wfOptions, workflows.GetBlockWorkflow, blockNum, true)
 		if err != nil {
 			fmt.Println(err)
 		}

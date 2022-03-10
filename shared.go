@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log"
 	"math/big"
 	"os"
 
@@ -50,7 +49,6 @@ type Block struct {
 
 func NewClient(options client.Options) (client.Client, error) {
 	if options.HostPort == "" {
-		log.Printf("Setting Temporal Endpoint to %s\n", os.Getenv("TEMPORAL_GRPC_ENDPOINT"))
 		options.HostPort = os.Getenv("TEMPORAL_GRPC_ENDPOINT")
 	}
 

@@ -190,7 +190,6 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 			receipts_root     TEXT           NOT NULL,
 			miner             TEXT           NOT NULL,
 			difficulty        NUMERIC(38, 0) NOT NULL,
-			extra_data        TEXT           DEFAULT NULL,
 			gas_limit         BIGINT         DEFAULT NULL,
 			gas_used          BIGINT         DEFAULT NULL,
 			timestamp         BIGINT         NOT NULL,
@@ -214,7 +213,6 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 			receipts_root,
 			miner,
 			difficulty,
-			extra_data,
 			gas_limit,
 			gas_used,
 			timestamp,
@@ -232,8 +230,7 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 			'%v', 
 			'%v', 
 			'%v', 
-			'%v', 
-			'%v'
+			'%v']
 		)
 		ON CONFLICT(number)
 		DO
@@ -244,12 +241,13 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 				   difficulty   = EXCLUDED.difficulty,
 				   sha3_uncles  = EXCLUDED.sha3_uncles
 		`, block.Number, block.Hash, block.ParentHash, block.Sha3Uncles, block.TransactionsRoot, block.StateRoot, block.ReceiptsRoot,
-		block.Miner, block.Difficulty, block.ExtraData, block.GasLimit, block.GasUsed, block.Timestamp, block.Transactions)
+		block.Miner, block.Difficulty, block.GasLimit, block.GasUsed, block.Timestamp, block.Transactions)
 	// logger.Info("Executing:")
 	// fmt.Println(upsertSql)
 	_, err = db.Exec(upsertSql)
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println(upsertSql)
 		panic(err)
 	}
 
