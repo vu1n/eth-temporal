@@ -90,13 +90,14 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 	if err != nil {
 		panic(err)
 	}
+	logger.Info(fmt.Sprintf("Fetched %v\n", result.Hash))
 
 	var transactions []app.Transaction
 	for _, t := range result.Transactions {
 		transaction := app.Transaction{
 			Hash:        t.Hash.String(),
 			From:        t.From.String(),
-			To:          t.To.String(),
+			To:          "",
 			GasPrice:    t.GasPrice,
 			Gas:         t.Gas,
 			Value:       t.Value,
@@ -104,6 +105,9 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 			BlockHash:   t.BlockHash.String(),
 			BlockNumber: t.BlockNumber,
 			TxnIndex:    t.TxnIndex,
+		}
+		if t.To != nil {
+			transaction.To = t.To.String()
 		}
 		transactions = append(transactions, transaction)
 	}
@@ -240,8 +244,8 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 				   sha3_uncles  = EXCLUDED.sha3_uncles
 		`, block.Number, block.Hash, block.ParentHash, block.Sha3Uncles, block.TransactionsRoot, block.StateRoot, block.ReceiptsRoot,
 		block.Miner, block.Difficulty, block.ExtraData, block.GasLimit, block.GasUsed, block.Timestamp, block.Transactions)
-	logger.Info("Executing:")
-	fmt.Println(upsertSql)
+	// logger.Info("Executing:")
+	// fmt.Println(upsertSql)
 	_, err = db.Exec(upsertSql)
 	if err != nil {
 		fmt.Println(err)
