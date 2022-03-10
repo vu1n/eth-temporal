@@ -56,7 +56,7 @@ func main() {
 	flag.Parse()
 
 	// Create the client object just once per process
-	c, err := client.NewClient(client.Options{})
+	c, err := app.NewClient(client.Options{})
 	if err != nil {
 		log.Fatalln("unable to create Temporal client", err)
 	}

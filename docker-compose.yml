@@ -84,9 +84,10 @@ services:
     build:
       context: .
       target: app
+    depends_on:
+      - temporal
     restart: unless-stopped
     environment:
-      - TEMPORAL_CLI_ADDRESS=temporal:7233
       - TEMPORAL_GRPC_ENDPOINT=temporal:7233
     networks:
       - temporal-network
@@ -95,9 +96,10 @@ services:
     build:
       context: .
       target: app
+    depends_on:
+      - temporal
     restart: unless-stopped
     environment:
-      - TEMPORAL_CLI_ADDRESS=temporal:7233
       - TEMPORAL_GRPC_ENDPOINT=temporal:7233
     networks:
       - temporal-network
@@ -106,6 +108,8 @@ services:
     build:
       context: .
       target: app
+    depends_on:
+      - temporal
     restart: unless-stopped
     environment:
       - TEMPORAL_GRPC_ENDPOINT=temporal:7233

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -13,9 +14,10 @@ import (
 
 func main() {
 	// Create the client object just once per process
-	c, err := client.NewClient(client.Options{})
+
+	c, err := app.NewClient(client.Options{})
 	if err != nil {
-		log.Fatalln("unable to create Temporal client", err)
+		log.Fatalln("unable to create Temporal clientttttt", os.Getenv("TEMPORAL_GRPC_ENDPOINT"), err)
 	}
 	defer c.Close()
 	//This worker hosts both Workflow and Activity functions

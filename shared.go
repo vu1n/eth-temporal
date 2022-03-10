@@ -1,7 +1,11 @@
 package app
 
 import (
+	"log"
 	"math/big"
+	"os"
+
+	"go.temporal.io/sdk/client"
 )
 
 const NewBlockTaskQueue = "NEW_BLOCK_TASK_QUEUE"
@@ -59,4 +63,13 @@ type Block struct {
 	GasUsed          uint64   `json:"gas_used"`
 	Timestamp        uint64   `json:"timestamp"`
 	Transactions     string   `json:"transactions"`
+}
+
+func NewClient(options client.Options) (client.Client, error) {
+	if options.HostPort == "" {
+		log.Printf("Setting Temporal Endpoint to %s\n", os.Getenv("TEMPORAL_GRPC_ENDPOINT"))
+		options.HostPort = os.Getenv("TEMPORAL_GRPC_ENDPOINT")
+	}
+
+	return client.NewClient(options)
 }

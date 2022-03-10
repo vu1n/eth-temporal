@@ -1,6 +1,7 @@
 package main
 
 import (
+	"eth-temporal/app"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +11,7 @@ import (
 )
 
 func main() {
-	c, err := client.NewClient(client.Options{})
+	c, err := app.NewClient(client.Options{})
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

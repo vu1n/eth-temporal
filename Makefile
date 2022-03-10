@@ -2,7 +2,7 @@
 
 .PHONY: up
 up:  ## Spin up Temporal cluster
-	docker compose up -d 
+	docker compose up -d  --build --force-recreate
 
 .PHONY: down
 down: ## Destroy the Temporal cluster

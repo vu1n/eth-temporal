@@ -16,6 +16,8 @@ COPY starter ./starter
 COPY worker ./worker
 COPY workflows ./workflows
 
+RUN go clean
+
 RUN go install -v ./api
 RUN go install -v ./backfill_worker
 RUN go install -v ./backfiller
