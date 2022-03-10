@@ -38,13 +38,11 @@ func startWorkflow(c client.Client, state *fetchState, end uint64) {
 		wf, err := c.ExecuteWorkflow(context.Background(), wfOptions, workflows.GetBlockWorkflow, blockNum)
 		if err != nil {
 			fmt.Println(err)
-			log.Fatalln("unable to get block 1")
 		}
 		var block app.Block
 		err = wf.Get(context.Background(), &block)
 		if err != nil {
 			fmt.Println(err)
-			log.Fatalln("unable to get block 2")
 		}
 	}
 }
