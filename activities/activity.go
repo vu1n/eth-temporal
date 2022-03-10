@@ -230,7 +230,7 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 			'%v', 
 			'%v', 
 			'%v', 
-			'%v']
+			'%v'
 		)
 		ON CONFLICT(number)
 		DO
