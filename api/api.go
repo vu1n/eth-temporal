@@ -15,15 +15,6 @@ import (
 	"go.temporal.io/sdk/client"
 )
 
-const (
-	rpcHost  = "https://eth-rpc.gateway.pokt.network"
-	host     = "localhost"
-	port     = 5433
-	user     = "temporal"
-	password = "temporal"
-	dbname   = "postgres"
-)
-
 type handlers struct {
 	temporalClient client.Client
 }
@@ -32,7 +23,7 @@ func (h *handlers) handleGetBlockByNumber(w http.ResponseWriter, r *http.Request
 	vars := mux.Vars(r)
 	blockNumber := vars["blockNumber"]
 
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", app.DbHost, app.DbPort, app.DbUser, app.DbPassword, app.DbName)
 
 	// Connect to pg db
 	db, err := sql.Open("postgres", psqlconn)

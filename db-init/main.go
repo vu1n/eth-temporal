@@ -2,22 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"eth-temporal/app"
 	"fmt"
 
 	_ "github.com/lib/pq"
 )
 
-const (
-	rpcHost  = "https://eth-rpc.gateway.pokt.network"
-	host     = "localhost"
-	port     = 5433
-	user     = "temporal"
-	password = "temporal"
-	dbname   = "postgres"
-)
-
 func main() {
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", app.DbHost, app.DbPort, app.DbUser, app.DbPassword, app.DbName)
 
 	fmt.Println(psqlconn)
 
@@ -26,7 +18,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Connected to %s\n", host)
+	fmt.Printf("Connected to %s\n", app.DbHost)
 	// clean up db connection
 	defer db.Close()
 

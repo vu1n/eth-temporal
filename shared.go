@@ -11,29 +11,12 @@ import (
 const NewBlockTaskQueue = "NEW_BLOCK_TASK_QUEUE"
 const BackfillTaskQueue = "BACKFILL_TASK_QUEUE"
 
-var QueryTypes = struct {
-	GET_NEXT_BLOCK string
-	BLOCK_COMPLETE string
-}{
-	GET_NEXT_BLOCK: "get_next_block",
-	BLOCK_COMPLETE: "block_complete",
-}
-
-var DB = struct {
-	rpcHost  string
-	host     string
-	port     int
-	user     string
-	password string
-	dbname   string
-}{
-	rpcHost:  "https://eth-rpc.gateway.pokt.network",
-	host:     "localhost",
-	port:     5433,
-	user:     "temporal",
-	password: "temporal",
-	dbname:   "postgres",
-}
+const RpcHost = "https://eth-rpc.gateway.pokt.network"
+const DbHost = "eth-pg"
+const DbPort = 5433
+const DbUser = "temporal"
+const DbPassword = "temporal"
+const DbName = "postgres"
 
 type Transaction struct {
 	Hash        string

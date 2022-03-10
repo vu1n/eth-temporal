@@ -13,19 +13,10 @@ import (
 	"go.temporal.io/sdk/activity"
 )
 
-const (
-	rpcHost  = "https://eth-rpc.gateway.pokt.network"
-	host     = "localhost"
-	port     = 5433
-	user     = "temporal"
-	password = "temporal"
-	dbname   = "postgres"
-)
-
 func GetLatestBlockNum(ctx context.Context) (uint64, error) {
 	logger := activity.GetLogger(ctx)
 
-	client, err := jsonrpc.NewClient(rpcHost)
+	client, err := jsonrpc.NewClient(app.RpcHost)
 	if err != nil {
 		return 0, err
 	}
@@ -88,7 +79,7 @@ func ConvertBlock(ctx context.Context, block web3.Block) (app.Block, error) {
 func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 	logger := activity.GetLogger(ctx)
 
-	client, err := jsonrpc.NewClient(rpcHost)
+	client, err := jsonrpc.NewClient(app.RpcHost)
 	if err != nil {
 		panic(err)
 	}
@@ -144,7 +135,7 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 
 func GetLastInsertedBlockNumber(ctx context.Context) (uint64, error) {
 	logger := activity.GetLogger(ctx)
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", app.DbHost, app.DbPort, app.DbUser, app.DbPassword, app.DbName)
 
 	// Connect to pg db
 	db, err := sql.Open("postgres", psqlconn)
@@ -152,7 +143,7 @@ func GetLastInsertedBlockNumber(ctx context.Context) (uint64, error) {
 		fmt.Println(err)
 		panic(err)
 	}
-	logger.Info(fmt.Sprintf("Connected to %s", host))
+	logger.Info(fmt.Sprintf("Connected to %s", app.DbHost))
 	// clean up db connection
 	defer db.Close()
 
@@ -169,7 +160,7 @@ func GetLastInsertedBlockNumber(ctx context.Context) (uint64, error) {
 
 func UpsertToPostgres(ctx context.Context, block app.Block) error {
 	logger := activity.GetLogger(ctx)
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", app.DbHost, app.DbPort, app.DbUser, app.DbPassword, app.DbName)
 
 	// Connect to pg db
 	db, err := sql.Open("postgres", psqlconn)
@@ -177,7 +168,7 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 		fmt.Println(err)
 		panic(err)
 	}
-	logger.Info(fmt.Sprintf("Connected to %s", host))
+	logger.Info(fmt.Sprintf("Connected to %s", app.DbHost))
 	// clean up db connection
 	defer db.Close()
 
