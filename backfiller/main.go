@@ -31,7 +31,7 @@ func startWorkflow(c client.Client, state *fetchState, end uint64) {
 		blockNum := state.Pop()
 		fmt.Printf("Queuing block number %v\n", blockNum)
 		wfOptions := client.StartWorkflowOptions{
-			ID:        fmt.Sprintf("get-block-%v", blockNum),
+			ID:        fmt.Sprintf("backfill-block-%v", blockNum),
 			TaskQueue: app.BackfillTaskQueue,
 		}
 
