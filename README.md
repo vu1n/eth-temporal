@@ -19,7 +19,19 @@ fetch      Fetch latest after worker has started
 test       Run tests
 ```
 
-## How to start
+## Quickstart
+
+1) Spin up Temporal cluster:
+`$ make up`
+
+2) Populate database with blocks from 14000000 to 14005000: `$ make db-init`
+
+3) Make a GET request: 
+
+* `curl http://localhost:8081/blockNumber/14000010`
+* `curl http://localhost:8081/traceBlock/14000010`
+
+
 
 ### Temporal cluster
 The project uses a (slightly) modified docker-compose from [Temporal](https://github.com/temporalio/docker-compose)
