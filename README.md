@@ -6,6 +6,7 @@ This project will spin up a [Temporal](https://temporal.io/) cluster. Results ar
 ```
 ❯ make
 up         Spin up Temporal cluster
+up-b       Spin up and force build Temporal cluster
 down       Destroy the Temporal cluster
 stop       Stop the Temporal cluster
 ps         Check the status of Temporal services
@@ -31,10 +32,9 @@ To destroy the cluster
 
 `$ make down`
 
-### Worker Program
-To start the worker program. We can scale horizontally by running more programs.
+To stop the cluster
 
-`$ make worker`
+`$ make stop`
 
 ### Start fetching blocks
 The included go program will spawn worker processes to fetch new blocks, starting from the `LATEST` block and incrementing from there.
@@ -42,23 +42,13 @@ The included go program will spawn worker processes to fetch new blocks, startin
 `$ make fetch`
 
 ### Backfilling
-To backfill specific blocks, run the included go program to populate the task queue. Currently set to use the same task queue as the fetch task.
-
-Start the backfill worker:
-
-`$ make backfill-worker`
-
 Add the backfill tasks:
 
 `$ go run ./backfiller/ -start 200 -end 210 -size 3`
 
 ### API
-There is a basic API to query block numbers. If the block number does not exist in the postgres database, it will start a workflow to fetch the block from the web3 provider and then return the results.
-
-Start the api server:
-
-`$ make api`
-
 Make an HTTP GET request to:
 
 `http://localhost:8081/blockNumber/{blockNumber}[0-9]+`
+
+`http://localhost:8081/traceBlock/{blockNumber}[0-9]+`
