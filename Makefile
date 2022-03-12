@@ -26,7 +26,9 @@ shell: ## Start a shell with the Temporal CLI
 
 .PHONY: db-init
 db-init: ## Initialize the database
-	go run ./db-init/
+	docker cp ./db-init/eth-pg.sql.gz eth-pg:/var/lib/postgresql/data
+	docker exec eth-pg gunzip -d /var/lib/postgresql/data/eth-pg.sql.gz
+	docker exec eth-pg psql -q -U temporal -p 5433 -f /var/lib/postgresql/data/eth-pg.sql
 
 .PHONY: api
 api: ## Start up API server

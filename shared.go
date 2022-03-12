@@ -1,8 +1,10 @@
 package app
 
 import (
-	"math/big"
+	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"go.temporal.io/sdk/client"
 )
@@ -17,40 +19,25 @@ const DbUser = "temporal"
 const DbPassword = "temporal"
 const DbName = "postgres"
 
-type Transaction struct {
-	Hash        string
-	From        string
-	To          string
-	GasPrice    uint64
-	Gas         uint64
-	Value       *big.Int
-	Nonce       uint64
-	BlockHash   string
-	BlockNumber uint64
-	TxnIndex    uint64
-}
-
-type Block struct {
-	Number           uint64   `json:"number"`
-	Hash             string   `json:"hash"`
-	ParentHash       string   `json:"parent_hash"`
-	Sha3Uncles       string   `json:"sha3_uncles"`
-	TransactionsRoot string   `json:"transactions_root"`
-	StateRoot        string   `json:"state_root"`
-	ReceiptsRoot     string   `json:"receipts_root"`
-	Miner            string   `json:"miner"`
-	Difficulty       *big.Int `json:"difficulty"`
-	ExtraData        string   `json:"extra_data"`
-	GasLimit         uint64   `json:"gas_limit"`
-	GasUsed          uint64   `json:"gas_used"`
-	Timestamp        uint64   `json:"timestamp"`
-	Transactions     string   `json:"transactions"`
-}
-
 func NewClient(options client.Options) (client.Client, error) {
 	if options.HostPort == "" {
 		options.HostPort = os.Getenv("TEMPORAL_GRPC_ENDPOINT")
 	}
 
 	return client.NewClient(options)
+}
+
+func HexToUInt(hexStr string) uint64 {
+	trimmed := strings.Replace(hexStr, "0x", "", -1)
+	trimmed = strings.Replace(trimmed, "0X", "", -1)
+	result, _ := strconv.ParseUint(trimmed, 16, 64)
+	return result
+}
+
+func HexToFloat(hexStr string) float32 {
+	return float32(HexToUInt(hexStr))
+}
+
+func UIntToHex(value uint64) string {
+	return fmt.Sprintf("0x%x", value)
 }

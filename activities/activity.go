@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"eth-temporal/app"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 	web3 "github.com/umbracle/go-web3"
 	"github.com/umbracle/go-web3/jsonrpc"
 	"go.temporal.io/sdk/activity"
@@ -34,49 +36,6 @@ func GetLatestBlockNum(ctx context.Context) (uint64, error) {
 	return number, err
 }
 
-func ConvertBlock(ctx context.Context, block web3.Block) (app.Block, error) {
-	var transactions []app.Transaction
-	for _, t := range block.Transactions {
-		transaction := app.Transaction{
-			Hash:        t.Hash.String(),
-			From:        t.From.String(),
-			To:          t.To.String(),
-			GasPrice:    t.GasPrice,
-			Gas:         t.Gas,
-			Value:       t.Value,
-			Nonce:       t.Nonce,
-			BlockHash:   t.BlockHash.String(),
-			BlockNumber: t.BlockNumber,
-			TxnIndex:    t.TxnIndex,
-		}
-		transactions = append(transactions, transaction)
-	}
-
-	transactionsJson, err := json.Marshal(transactions)
-	if err != nil {
-		panic(err)
-	}
-
-	newBlock := app.Block{
-		Number:           block.Number,
-		Hash:             block.Hash.String(),
-		ParentHash:       block.ParentHash.String(),
-		Sha3Uncles:       block.Sha3Uncles.String(),
-		TransactionsRoot: block.TransactionsRoot.String(),
-		StateRoot:        block.StateRoot.String(),
-		ReceiptsRoot:     block.ReceiptsRoot.String(),
-		Miner:            block.Miner.String(),
-		Difficulty:       block.Difficulty,
-		ExtraData:        string(block.ExtraData),
-		GasLimit:         block.GasLimit,
-		GasUsed:          block.GasUsed,
-		Timestamp:        block.Timestamp,
-		Transactions:     string(transactionsJson),
-	}
-
-	return newBlock, nil
-}
-
 func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 	logger := activity.GetLogger(ctx)
 
@@ -91,7 +50,10 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 	if err != nil {
 		panic(err)
 	}
-	logger.Info(fmt.Sprintf("Fetched %v\n", result.Hash))
+
+	if result == nil {
+		panic("No results")
+	}
 
 	var transactions []app.Transaction
 	for _, t := range result.Transactions {
@@ -138,6 +100,43 @@ func GetBlockByNumber(ctx context.Context, number uint64) (app.Block, error) {
 	return block, nil
 }
 
+func GetTracesByBlock(ctx context.Context, number uint64) ([]app.Trace, error) {
+	logger := activity.GetLogger(ctx)
+
+	logger.Info(fmt.Sprintf("Fetching traces for block: %v\n", number))
+
+	postBody, _ := json.Marshal(app.TraceBlockPayload{
+		Method:  "trace_block",
+		Params:  []string{fmt.Sprintf("0x%x", number)},
+		Id:      1,
+		Jsonrpc: "2.0",
+	})
+	responseBody := bytes.NewBuffer(postBody)
+	resp, err := http.Post("https://eth-rpc.gateway.pokt.network", "application/json", responseBody)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	var res app.TraceBlockResponse
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		panic(err)
+	}
+
+	if res.Error != nil {
+		panic(res.Error)
+	}
+
+	if len(res.Result) == 0 {
+		panic("No results")
+	}
+	return res.Result, nil
+}
+
 func GetLastInsertedBlockNumber(ctx context.Context) (uint64, error) {
 	logger := activity.GetLogger(ctx)
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", app.DbHost, app.DbPort, app.DbUser, app.DbPassword, app.DbName)
@@ -163,7 +162,7 @@ func GetLastInsertedBlockNumber(ctx context.Context) (uint64, error) {
 	return blockNumber, err
 }
 
-func UpsertToPostgres(ctx context.Context, block app.Block) error {
+func UpsertBlockToPostgres(ctx context.Context, block app.Block) error {
 	logger := activity.GetLogger(ctx)
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", app.DbHost, app.DbPort, app.DbUser, app.DbPassword, app.DbName)
 
@@ -251,5 +250,121 @@ func UpsertToPostgres(ctx context.Context, block app.Block) error {
 		panic(err)
 	}
 
-	return err
+	return nil
+}
+
+func UpsertTracesToPostgres(ctx context.Context, blockNumber uint64, traces []app.Trace) error {
+	logger := activity.GetLogger(ctx)
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", app.DbHost, app.DbPort, app.DbUser, app.DbPassword, app.DbName)
+
+	// Connect to pg db
+	db, err := sql.Open("postgres", psqlconn)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	logger.Info(fmt.Sprintf("Connected to %s", app.DbHost))
+	// clean up db connection
+	defer db.Close()
+
+	txn, err := db.Begin()
+	if err != nil {
+		panic(err)
+	}
+
+	// create table
+	createSql :=
+		`CREATE SCHEMA IF NOT EXISTS ethereum;
+		CREATE TABLE IF NOT EXISTS ethereum.traces (
+			block_number      BIGINT         NOT NULL,
+			block_hash        TEXT           NOT NULL,
+			transaction_hash  TEXT           NOT NULL,
+			from_address      TEXT           NOT NULL,
+			to_address        TEXT           NOT NULL,
+			value             NUMERIC(38,0)  NOT NULL,
+			input             TEXT           NOT NULL,
+			output            TEXT           NOT NULL,
+			trace_type        TEXT           NOT NULL,
+			call_type         TEXT           NOT NULL,
+			reward_type       TEXT           NOT NULL,
+			gas               BIGINT         NOT NULL,
+			gas_used          BIGINT         NOT NULL,
+			subtraces         BIGINT         NOT NULL,
+			trace_address     TEXT           NOT NULL,
+			transaction_pos   BIGINT         NOT NULL,
+			error             TEXT           NOT NULL
+		);
+		CREATE INDEX IF NOT EXISTS idx_traces_block_number ON ethereum.traces (block_number);
+		CREATE TEMP TABLE traces_stage AS TABLE ethereum.traces WITH NO DATA;
+		`
+
+	_, err = txn.Exec(createSql)
+	if err != nil {
+		panic(err)
+	}
+
+	// Copy data into temp table for upsert
+	stmt, err := txn.Prepare(pq.CopyIn(
+		"traces_stage",
+		"block_number", "block_hash", "transaction_hash", "from_address", "to_address", "value",
+		"input", "output", "trace_type", "call_type", "reward_type", "gas",
+		"gas_used", "subtraces", "trace_address", "transaction_pos", "error"))
+	if err != nil {
+		panic(err)
+	}
+
+	for _, trace := range traces {
+		traceAddress, _ := json.Marshal(trace.TraceAddress)
+		_, err = stmt.Exec(trace.BlockNumber, trace.BlockHash, trace.TransactionHash,
+			trace.Action.From, trace.Action.To, app.HexToFloat(trace.Action.Value), trace.Action.Input,
+			trace.Result.Output, trace.Type, trace.Action.CallType, trace.Action.RewardType, app.HexToUInt(trace.Action.Gas),
+			app.HexToUInt(trace.Result.GasUsed), trace.Subtraces, traceAddress, trace.TransactionPosition, trace.Error)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	_, err = stmt.Exec()
+	if err != nil {
+		panic(err)
+	}
+
+	err = stmt.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	// upsert traces
+	// I'm not sure if we can UPSERT, so will just DELETE rows and insert
+	upsertSql := fmt.Sprintf(`
+		DELETE FROM ethereum.traces WHERE block_number = '%v';
+		INSERT INTO ethereum.traces
+		SELECT * FROM traces_stage
+		`, blockNumber)
+	// ON CONFLICT (block_number, transaction_hash, transaction_pos, from_address, to_address, trace_address)
+	// DO
+	// UPDATE SET
+	// 		value         = EXCLUDED.value,
+	// 		input         = EXCLUDED.input,
+	// 		output        = EXCLUDED.output,
+	// 		trace_type    = EXCLUDED.trace_type,
+	// 		call_type     = EXCLUDED.call_type,
+	// 		reward_type   = EXCLUDED.reward_type,
+	// 		gas           = EXCLUDED.gas,
+	// 		gas_used      = EXCLUDED.gas_used,
+	// 		subtraces     = EXCLUDED.subtraces,
+	// 		error         = EXCLUDED.error
+	_, err = txn.Exec(upsertSql)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(upsertSql)
+		panic(err)
+	}
+
+	err = txn.Commit()
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
 }

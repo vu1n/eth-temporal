@@ -39,7 +39,7 @@ func (s *UnitTestSuite) Test_GetLatestBlockNumWorkflow() {
 
 func (s *UnitTestSuite) Test_GetBlockWorkflow() {
 	s.env.OnActivity(activities.GetBlockByNumber, mock.Anything, uint64(1024)).Return(app.Block{Number: uint64(1024)}, nil)
-	s.env.OnActivity(activities.UpsertToPostgres, mock.Anything, mock.Anything).Return(nil)
+	s.env.OnActivity(activities.UpsertBlockToPostgres, mock.Anything, mock.Anything).Return(nil)
 	s.env.ExecuteWorkflow(workflows.GetBlockWorkflow, uint64(1024))
 
 	s.True(s.env.IsWorkflowCompleted())

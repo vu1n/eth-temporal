@@ -2,7 +2,7 @@ FROM golang:1.17 as base
 
 WORKDIR /go/src/eth-temporal/app
 
-COPY go.mod go.sum shared.go ./
+COPY go.mod go.sum shared.go structs.go ./
 
 RUN go mod download
 

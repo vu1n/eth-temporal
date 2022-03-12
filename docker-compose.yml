@@ -91,6 +91,8 @@ services:
       - TEMPORAL_GRPC_ENDPOINT=temporal:7233
     networks:
       - temporal-network
+    ports:
+      - 8081:8081
     command: et-api
   worker:
     build:
