@@ -29,6 +29,7 @@ func main() {
 	w.RegisterActivity(activities.UpsertTracesToPostgres)
 
 	w.RegisterWorkflow(workflows.GetBlockWorkflow)
+	w.RegisterWorkflow(workflows.GetTracesWorkflow)
 
 	// Start listening to the Task Queue
 	err = w.Run(worker.InterruptCh())

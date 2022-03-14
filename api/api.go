@@ -77,6 +77,7 @@ func (h *handlers) handleGetBlockByNumber(w http.ResponseWriter, r *http.Request
 			},
 			workflows.GetBlockWorkflow,
 			blockNum,
+			true,
 		)
 		if err != nil {
 			fmt.Printf("failed to start workflow: %v", err)
@@ -153,47 +154,48 @@ func (h *handlers) handleGetTraceByBlockNumber(w http.ResponseWriter, r *http.Re
 	}
 	defer rows.Close()
 
-	var block string
+	var traces string
 	rows.Next()
-	err = rows.Scan(&block)
+	err = rows.Scan(&traces)
 	if err != nil {
 		// On error we will queue a task to fetch the block and return the reuslt
-		var block app.Block
+		var traces []app.Trace
 		var blockNum uint64
 		blockNum, _ = strconv.ParseUint(blockNumber, 10, 64)
 		we, err := h.temporalClient.ExecuteWorkflow(
 			r.Context(),
 			client.StartWorkflowOptions{
 				TaskQueue: app.NewBlockTaskQueue,
-				ID:        fmt.Sprintf("get-block-from-api-call-%v", blockNumber),
+				ID:        fmt.Sprintf("get-traces-from-api-call-%v", blockNumber),
 			},
-			workflows.GetBlockWorkflow,
+			workflows.GetTracesWorkflow,
 			blockNum,
+			true,
 		)
 		if err != nil {
 			fmt.Printf("failed to start workflow: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		we.Get(context.Background(), &block)
+		we.Get(context.Background(), &traces)
 		if err != nil {
 			fmt.Printf("failed to retrieve block: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		blockJson, err := json.Marshal(block)
+		tracesJson, err := json.Marshal(traces)
 		if err != nil {
 			fmt.Printf("failed to marshal json: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Println(blockJson)
-		w.Write(blockJson)
+		fmt.Println(tracesJson)
+		w.Write(tracesJson)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Println(block)
-	w.Write([]byte(block))
+	fmt.Println(traces)
+	w.Write([]byte(traces))
 }
 
 func Router(c client.Client) *mux.Router {
